@@ -1,0 +1,11 @@
+[Unit]
+Description=Install uEye drivers using their script on first startup
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/share/ueye/bin/ueyesdk-setup.sh
+
+[Install]
+WantedBy=basic.target
