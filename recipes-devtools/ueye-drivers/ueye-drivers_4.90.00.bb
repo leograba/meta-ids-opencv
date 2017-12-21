@@ -2,7 +2,6 @@ SUMMARY = "Add IDS camera driver"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384361b4de20420"
 
-#inherit systemd update-rc.d
 inherit update-rc.d
 
 SRC_URI = " \
@@ -10,26 +9,18 @@ SRC_URI = " \
 	file://ueyeusbd.conf \
 	file://ueyeethd.conf \
 	file://machine.conf \
-    file://install-sdk-only-once.patch \
-    file://ueye-drivers.service \
+#    file://install-sdk-only-once.patch \
 "
 
 S = "${WORKDIR}"
 
-#RPROVIDES_${PN} = "libueye_api"
 RDEPENDS_${PN} = "libqtnetwork4 libqtgui4 libx11 libqtcore4"
 
-#PACKAGES =+ " ${PN}-initeth ${PN}-initusb"
-#INITSCRIPT_PACKAGES = "${PN} ${PN}-initeth ${PN}-initusb"
-
+#this is not working, /etc/rc* directories/links are not created!
+#workaround using the recipe "ueye-drivers-service" that runs update-rc.d on
+#the target during the first boot
 INITSCRIPT_NAME = "ueyeethdrc"
 INITSCRIPT_PARAMS = "defaults"
-
-#INITSCRIPT_NAME_${PN}-initeth = "ueyeethdrc"
-#INITSCRIPT_PARAMS_${PN}-initeth = "start 99 2 3 4 5 ."
-
-#INITSCRIPT_NAME_${PN}-initusb = "ueyeusbdrc"
-#INITSCRIPT_PARAMS_${PN}-initusb = "start 99 2 3 4 5 ."
 
 do_install() {
 	#tentar ${D}${sysconfdir} = /etc
@@ -65,7 +56,7 @@ do_install() {
 
 	oe_libinstall -so -C usr/lib libueye_api ${D}${libdir}
 #	the symlink below is not automatically created:
-	ln -sf /usr/lib/libueye_api.so.1 ${D}/usr/lib/libueye_api.so
+	ln -sf /usr/lib/libueye_api.so.1 ${D}${libdir}/libueye_api.so
 
 	install -d ${D}${includedir}
 	install -m 0644 ${S}/usr/include/ueye.h ${D}/usr/include/
@@ -94,22 +85,13 @@ do_install() {
 
 	install -d ${D}/usr/local/share/ueye/libueye_api
 	install -m 0644 ${WORKDIR}/machine.conf ${D}/usr/local/share/ueye/libueye_api
-
-#    install -d ${D}${systemd_unitdir}/system/
-#    install -m 0644 ${WORKDIR}/ueye-drivers.service ${D}${systemd_unitdir}/system
 }
 
 FILES_${PN} += "${sysconfdir}/* ${bindir}/* ${libdir}/* /usr/local/* ${includedir}/*"
-#FILES_${PN}-initeth = "${sysconfdir}/init.d/ueyeethdrc"
-#FILES_${PN}-initusb = "${sysconfdir}/init.d/ueyeusbdrc"
-#FILES_${PN}-dev += "/usr/include/*"
-
-#NATIVE_SYSTEMD_SUPPORT = "1"
-#SYSTEMD_PACKAGES = "${PN}"
-#SYSTEMD_SERVICE_${PN} = "ueye-drivers.service"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
+# Requeired due to precompiled binaries/libs
 INHIBIT_PACKAGE_STRIP = "1"
 INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
 
