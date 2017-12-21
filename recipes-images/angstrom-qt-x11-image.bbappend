@@ -1,2 +1,1 @@
-IMAGE_INSTALL_append = "opencv libgomp python-pip python-matplotlib"
-
+IMAGE_INSTALL_append = "opencv libgomp python-pip python-matplotlib python-pyqt inotify-tools gdb"
