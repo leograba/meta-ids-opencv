@@ -2,21 +2,34 @@ SUMMARY = "Add IDS camera driver"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384361b4de20420"
 
-inherit systemd
+#inherit systemd update-rc.d
+inherit update-rc.d
 
 SRC_URI = " \
     file://uEyeSDK-4.90.00-ARM_LINUX_IDS_GNUEABI_HF.tgz \
+	file://ueyeusbd.conf \
+	file://ueyeethd.conf \
+	file://machine.conf \
     file://install-sdk-only-once.patch \
     file://ueye-drivers.service \
 "
-
 
 S = "${WORKDIR}"
 
 #RPROVIDES_${PN} = "libueye_api"
 RDEPENDS_${PN} = "libqtnetwork4 libqtgui4 libx11 libqtcore4"
 
-#PACKAGES += " ${PN} ${PN}-dev"
+#PACKAGES =+ " ${PN}-initeth ${PN}-initusb"
+#INITSCRIPT_PACKAGES = "${PN} ${PN}-initeth ${PN}-initusb"
+
+INITSCRIPT_NAME = "ueyeethdrc"
+INITSCRIPT_PARAMS = "defaults"
+
+#INITSCRIPT_NAME_${PN}-initeth = "ueyeethdrc"
+#INITSCRIPT_PARAMS_${PN}-initeth = "start 99 2 3 4 5 ."
+
+#INITSCRIPT_NAME_${PN}-initusb = "ueyeusbdrc"
+#INITSCRIPT_PARAMS_${PN}-initusb = "start 99 2 3 4 5 ."
 
 do_install() {
 	#tentar ${D}${sysconfdir} = /etc
@@ -25,22 +38,23 @@ do_install() {
 	#tentar ${D}${includedir} = /usr/include
 	#tentar ${D}${localstatedir} = /var
 
-	install -d ${D}/etc
+	#this did not work
+	install -d ${D}${sysconfdir}/init.d/
+    install -m 0755 ${S}/etc/init.d/ueyeethdrc ${D}${sysconfdir}/init.d/ueyeethdrc
+    install -m 0755 ${S}/etc/init.d/ueyeusbdrc ${D}${sysconfdir}/init.d/ueyeusbdrc
 
-	install -d ${D}/etc/init.d
-    install -m 0755 ${S}/etc/init.d/* ${D}/etc/init.d
+	install -d ${D}${sysconfdir}/network
+	install -d ${D}${sysconfdir}/network/if-post-up.d
+    install -m 0755 ${S}/etc/network/if-post-up.d/* ${D}${sysconfdir}/network/if-post-up.d
+	install -d ${D}${sysconfdir}/network/if-pre-down.d
+    install -m 0755 ${S}/etc/network/if-pre-down.d/* ${D}${sysconfdir}/network/if-pre-down.d
 
-	install -d ${D}/etc/network
-	install -d ${D}/etc/network/if-post-up.d
-    install -m 0755 ${S}/etc/network/if-post-up.d/* ${D}/etc/network/if-post-up.d
-	install -d ${D}/etc/network/if-pre-down.d
-    install -m 0755 ${S}/etc/network/if-pre-down.d/* ${D}/etc/network/if-pre-down.d
-
-	install -d ${D}/etc/udev
-	install -d ${D}/etc/udev/rules.d
-    install -m 0644 ${S}/etc/udev/rules.d/* ${D}/etc/udev/rules.d
+	install -d ${D}${sysconfdir}/udev
+	install -d ${D}${sysconfdir}/udev/rules.d
+    install -m 0644 ${S}/etc/udev/rules.d/* ${D}${sysconfdir}/udev/rules.d
 
 	install -d ${D}${bindir}
+    install -m 0755 ${S}/etc/init.d/ueyeethdrc ${D}${bindir}/ueyeethdrc
 	ln -sf /usr/local/share/ueye/bin/idscameramanager ${D}${bindir}/idscameramanager
 	ln -sf /usr/local/share/ueye/bin/idscameramanager ${D}${bindir}/ueyecameramanager
 	ln -sf /usr/local/share/ueye/bin/ueyedemo ${D}${bindir}/ueyedemo
@@ -48,9 +62,10 @@ do_install() {
 	ln -sf /usr/local/share/ueye/bin/ueyelive ${D}${bindir}/ueyelive
 	ln -sf /usr/local/share/ueye/bin/ueyesetid ${D}${bindir}/ueyesetid
 	ln -sf /usr/local/share/ueye/bin/ueyesetip ${D}${bindir}/ueyesetip
-#	install -m 0755 ${S}/usr/local/share/ueye/bin/* ${D}${bindir}
 
 	oe_libinstall -so -C usr/lib libueye_api ${D}${libdir}
+#	the symlink below is not automatically created:
+	ln -sf /usr/lib/libueye_api.so.1 ${D}/usr/lib/libueye_api.so
 
 	install -d ${D}${includedir}
 	install -m 0644 ${S}/usr/include/ueye.h ${D}/usr/include/
@@ -71,24 +86,27 @@ do_install() {
 
 	install -d ${D}/usr/local/share/ueye/ueyeethd
 	install -m 0755 ${S}/usr/local/share/ueye/ueyeethd/* ${D}/usr/local/share/ueye/ueyeethd
+	install -m 0644 ${WORKDIR}/ueyeethd.conf ${D}/usr/local/share/ueye/ueyeethd
 
 	install -d ${D}/usr/local/share/ueye/ueyeusbd
 	install -m 0755 ${S}/usr/local/share/ueye/ueyeusbd/* ${D}/usr/local/share/ueye/ueyeusbd
+	install -m 0644 ${WORKDIR}/ueyeusbd.conf ${D}/usr/local/share/ueye/ueyeusbd
 
-	#do we need to create the symlinks?
-#	ln -sf /usr/lib/libueye_api.so ${D}/usr/lib/libueye_api.so.4.90
-#	ln -sf /usr/lib/libueye_api.so.1 ${D}/usr/lib/libueye_api.so
+	install -d ${D}/usr/local/share/ueye/libueye_api
+	install -m 0644 ${WORKDIR}/machine.conf ${D}/usr/local/share/ueye/libueye_api
 
-    install -d ${D}${systemd_unitdir}/system/
-    install -m 0644 ${WORKDIR}/ueye-drivers.service ${D}${systemd_unitdir}/system
+#    install -d ${D}${systemd_unitdir}/system/
+#    install -m 0644 ${WORKDIR}/ueye-drivers.service ${D}${systemd_unitdir}/system
 }
 
-FILES_${PN} += "/etc/* /usr/bin/* /usr/lib/* /usr/local/* /usr/include/*"
+FILES_${PN} += "${sysconfdir}/* ${bindir}/* ${libdir}/* /usr/local/* ${includedir}/*"
+#FILES_${PN}-initeth = "${sysconfdir}/init.d/ueyeethdrc"
+#FILES_${PN}-initusb = "${sysconfdir}/init.d/ueyeusbdrc"
 #FILES_${PN}-dev += "/usr/include/*"
 
-NATIVE_SYSTEMD_SUPPORT = "1"
-SYSTEMD_PACKAGES = "${PN}"
-SYSTEMD_SERVICE_${PN} = "ueye-drivers.service"
+#NATIVE_SYSTEMD_SUPPORT = "1"
+#SYSTEMD_PACKAGES = "${PN}"
+#SYSTEMD_SERVICE_${PN} = "ueye-drivers.service"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
