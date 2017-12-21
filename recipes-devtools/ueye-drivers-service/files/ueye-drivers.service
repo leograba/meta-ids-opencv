@@ -1,6 +1,6 @@
 [Unit]
 Description=Install uEye drivers using their script on first startup
-DefaultDependencies=no
+After=multi-user.target
 
 [Service]
 Type=oneshot
@@ -8,4 +8,4 @@ RemainAfterExit=yes
 ExecStart=/usr/bin/ueye-drivers.sh
 
 [Install]
-WantedBy=basic.target
+WantedBy=multi-user.target
