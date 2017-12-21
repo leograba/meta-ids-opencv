@@ -9,8 +9,8 @@ SRC_URI = " \
 	file://ueyeusbd.conf \
 	file://ueyeethd.conf \
 	file://machine.conf \
-#    file://install-sdk-only-once.patch \
 "
+#    file://install-sdk-only-once.patch
 
 S = "${WORKDIR}"
 
