@@ -11,6 +11,8 @@ SRC_URI = " \
 
 S = "${WORKDIR}"
 
+RDEPENDS_${PN} = "libqtnetwork4 libqtgui4 libx11 libqtcore4"
+
 do_install() {
 	#tentar ${D}${sysconfdir} = /etc
 	#tentar ${D}${bindir} = /usr/bin
@@ -35,6 +37,12 @@ do_install() {
 
 	install -d ${D}/usr
 
+	#do we need to create the symlinks?
+	install -d ${D}/usr/lib
+	oe_libinstall -so -C usr/lib libueye_api ${D}/usr/lib
+	ln -sf /usr/lib/libueye_api.so ${D}/usr/lib/libueye_api.so.4.90
+	ln -sf /usr/lib/libueye_api.so.1 ${D}/usr/lib/libueye_api.so
+
 	install -d ${D}/usr/bin
 	ln -sf /usr/local/share/ueye/bin/idscameramanager ${D}/usr/bin/idscameramanager
 	ln -sf /usr/local/share/ueye/bin/idscameramanager ${D}/usr/bin/ueyecameramanager
@@ -48,12 +56,6 @@ do_install() {
 	install -m 0644 ${S}/usr/include/ueye.h ${D}/usr/include/
 	install -m 0644 ${S}/usr/include/ueye_deprecated.h ${D}/usr/include/
 	ln -sf /usr/include/ueye.h ${D}/usr/include/uEye.h
-
-	#do we need to create the symlinks?
-	install -d ${D}/usr/lib
-	oe_libinstall -so -C usr/lib libueye_api ${D}/usr/lib
-	ln -sf /usr/lib/libueye_api.so ${D}/usr/lib/libueye_api.so.4.90
-	ln -sf /usr/lib/libueye_api.so.1 ${D}/usr/lib/libueye_api.so
 	
 	install -d ${D}/usr/local
 	install -d ${D}/usr/local/share
@@ -76,7 +78,8 @@ do_install() {
     install -m 0644 ${WORKDIR}/ueye-drivers.service ${D}${systemd_unitdir}/system
 }
 
-FILES_${PN} += "/usr/local/share/ueye/*"
+FILES_${PN} += "/usr/local/share/ueye/bin/* /usr/local/share/ueye/firmware/* /usr/lib/libueye_api.so"
+FILES_${PN}-dev += "/usr/local/share/ueye/*"
 
 NATIVE_SYSTEMD_SUPPORT = "1"
 SYSTEMD_PACKAGES = "${PN}"
