@@ -41,14 +41,14 @@ do_install() {
     install -m 0644 ${S}/etc/udev/rules.d/* ${D}/etc/udev/rules.d
 
 	install -d ${D}${bindir}
-#	ln -sf /usr/local/share/ueye/bin/idscameramanager ${D}${bindir}/idscameramanager
-#	ln -sf /usr/local/share/ueye/bin/idscameramanager ${D}${bindir}/ueyecameramanager
-#	ln -sf /usr/local/share/ueye/bin/ueyedemo ${D}${bindir}/ueyedemo
-#	ln -sf /usr/local/share/ueye/bin/ueyefreeze ${D}${bindir}/ueyefreeze
-#	ln -sf /usr/local/share/ueye/bin/ueyelive ${D}${bindir}/ueyelive
-#	ln -sf /usr/local/share/ueye/bin/ueyesetid ${D}${bindir}/ueyesetid
-#	ln -sf /usr/local/share/ueye/bin/ueyesetip ${D}${bindir}/ueyesetip
-	install -m 0755 ${S}/usr/local/share/ueye/bin/* ${D}${bindir}
+	ln -sf /usr/local/share/ueye/bin/idscameramanager ${D}${bindir}/idscameramanager
+	ln -sf /usr/local/share/ueye/bin/idscameramanager ${D}${bindir}/ueyecameramanager
+	ln -sf /usr/local/share/ueye/bin/ueyedemo ${D}${bindir}/ueyedemo
+	ln -sf /usr/local/share/ueye/bin/ueyefreeze ${D}${bindir}/ueyefreeze
+	ln -sf /usr/local/share/ueye/bin/ueyelive ${D}${bindir}/ueyelive
+	ln -sf /usr/local/share/ueye/bin/ueyesetid ${D}${bindir}/ueyesetid
+	ln -sf /usr/local/share/ueye/bin/ueyesetip ${D}${bindir}/ueyesetip
+#	install -m 0755 ${S}/usr/local/share/ueye/bin/* ${D}${bindir}
 
 	oe_libinstall -so -C usr/lib libueye_api ${D}${libdir}
 
@@ -83,8 +83,8 @@ do_install() {
     install -m 0644 ${WORKDIR}/ueye-drivers.service ${D}${systemd_unitdir}/system
 }
 
-FILES_${PN} += "/usr/local/share/ueye/bin/* /usr/local/share/ueye/firmware/* /usr/lib/libueye_api.so"
-FILES_${PN}-dev += "/usr/local/share/ueye/*"
+FILES_${PN} += "/etc/* /usr/bin/* /usr/lib/* /usr/local/* /usr/include/*"
+#FILES_${PN}-dev += "/usr/include/*"
 
 NATIVE_SYSTEMD_SUPPORT = "1"
 SYSTEMD_PACKAGES = "${PN}"
