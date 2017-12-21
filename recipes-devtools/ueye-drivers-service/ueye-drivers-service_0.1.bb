@@ -4,6 +4,8 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384
 
 inherit systemd
 
+RDEPENDS_${PN} "ueye-drivers"
+
 SRC_URI = " \
     file://ueye-drivers.sh \
     file://ueye-drivers.service \
