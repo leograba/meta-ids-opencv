@@ -6,12 +6,17 @@ inherit systemd
 
 SRC_URI = " \
     file://uEyeSDK-4.90.00-ARM_LINUX_IDS_GNUEABI_HF.tgz \
+    file://install-sdk-only-once.patch \
     file://ueye-drivers.service \
 "
 
+
 S = "${WORKDIR}"
 
+#RPROVIDES_${PN} = "libueye_api"
 RDEPENDS_${PN} = "libqtnetwork4 libqtgui4 libx11 libqtcore4"
+
+#PACKAGES += " ${PN} ${PN}-dev"
 
 do_install() {
 	#tentar ${D}${sysconfdir} = /etc
@@ -35,44 +40,44 @@ do_install() {
 	install -d ${D}/etc/udev/rules.d
     install -m 0644 ${S}/etc/udev/rules.d/* ${D}/etc/udev/rules.d
 
-	install -d ${D}/usr
+	install -d ${D}${bindir}
+#	ln -sf /usr/local/share/ueye/bin/idscameramanager ${D}${bindir}/idscameramanager
+#	ln -sf /usr/local/share/ueye/bin/idscameramanager ${D}${bindir}/ueyecameramanager
+#	ln -sf /usr/local/share/ueye/bin/ueyedemo ${D}${bindir}/ueyedemo
+#	ln -sf /usr/local/share/ueye/bin/ueyefreeze ${D}${bindir}/ueyefreeze
+#	ln -sf /usr/local/share/ueye/bin/ueyelive ${D}${bindir}/ueyelive
+#	ln -sf /usr/local/share/ueye/bin/ueyesetid ${D}${bindir}/ueyesetid
+#	ln -sf /usr/local/share/ueye/bin/ueyesetip ${D}${bindir}/ueyesetip
+	install -m 0755 ${S}/usr/local/share/ueye/bin/* ${D}${bindir}
 
-	#do we need to create the symlinks?
-	install -d ${D}/usr/lib
-	oe_libinstall -so -C usr/lib libueye_api ${D}/usr/lib
-	ln -sf /usr/lib/libueye_api.so ${D}/usr/lib/libueye_api.so.4.90
-	ln -sf /usr/lib/libueye_api.so.1 ${D}/usr/lib/libueye_api.so
+	oe_libinstall -so -C usr/lib libueye_api ${D}${libdir}
 
-	install -d ${D}/usr/bin
-	ln -sf /usr/local/share/ueye/bin/idscameramanager ${D}/usr/bin/idscameramanager
-	ln -sf /usr/local/share/ueye/bin/idscameramanager ${D}/usr/bin/ueyecameramanager
-	ln -sf /usr/local/share/ueye/bin/ueyedemo ${D}/usr/bin/ueyedemo
-	ln -sf /usr/local/share/ueye/bin/ueyefreeze ${D}/usr/bin/ueyefreeze
-	ln -sf /usr/local/share/ueye/bin/ueyelive ${D}/usr/bin/ueyelive
-	ln -sf /usr/local/share/ueye/bin/ueyesetid ${D}/usr/bin/ueyesetid
-	ln -sf /usr/local/share/ueye/bin/ueyesetip ${D}/usr/bin/ueyesetip
-
-	install -d ${D}/usr/include
+	install -d ${D}${includedir}
 	install -m 0644 ${S}/usr/include/ueye.h ${D}/usr/include/
 	install -m 0644 ${S}/usr/include/ueye_deprecated.h ${D}/usr/include/
 	ln -sf /usr/include/ueye.h ${D}/usr/include/uEye.h
-	
-	install -d ${D}/usr/local
-	install -d ${D}/usr/local/share
-	install -d ${D}/usr/local/share/ueye
+
 	install -d ${D}/usr/local/share/ueye/bin
-	install -d ${D}/usr/local/share/ueye/firmware
-	install -d ${D}/usr/local/share/ueye/firmware/usb3
-	install -d ${D}/usr/local/share/ueye/firmware/usb3_addon
-	install -d ${D}/usr/local/share/ueye/licenses
-	install -d ${D}/usr/local/share/ueye/ueyeethd
-	install -d ${D}/usr/local/share/ueye/ueyeusbd
 	install -m 0755 ${S}/usr/local/share/ueye/bin/* ${D}/usr/local/share/ueye/bin
+
+	install -d ${D}/usr/local/share/ueye/firmware/usb3
 	install -m 0644 ${S}/usr/local/share/ueye/firmware/usb3/* ${D}/usr/local/share/ueye/firmware/usb3
+
+	install -d ${D}/usr/local/share/ueye/firmware/usb3_addon
 	install -m 0644 ${S}/usr/local/share/ueye/firmware/usb3_addon/* ${D}/usr/local/share/ueye/firmware/usb3_addon
+
+	install -d ${D}/usr/local/share/ueye/licenses
 	install -m 0644 ${S}/usr/local/share/ueye/licenses/* ${D}/usr/local/share/ueye/licenses
+
+	install -d ${D}/usr/local/share/ueye/ueyeethd
 	install -m 0755 ${S}/usr/local/share/ueye/ueyeethd/* ${D}/usr/local/share/ueye/ueyeethd
+
+	install -d ${D}/usr/local/share/ueye/ueyeusbd
 	install -m 0755 ${S}/usr/local/share/ueye/ueyeusbd/* ${D}/usr/local/share/ueye/ueyeusbd
+
+	#do we need to create the symlinks?
+#	ln -sf /usr/lib/libueye_api.so ${D}/usr/lib/libueye_api.so.4.90
+#	ln -sf /usr/lib/libueye_api.so.1 ${D}/usr/lib/libueye_api.so
 
     install -d ${D}${systemd_unitdir}/system/
     install -m 0644 ${WORKDIR}/ueye-drivers.service ${D}${systemd_unitdir}/system
@@ -86,4 +91,9 @@ SYSTEMD_PACKAGES = "${PN}"
 SYSTEMD_SERVICE_${PN} = "ueye-drivers.service"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
+
+INHIBIT_PACKAGE_STRIP = "1"
+INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
+
+INSANE_SKIP_${PN} += "already-stripped ldflags"
 
